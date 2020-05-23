@@ -1,4 +1,5 @@
 import torch
+from torch.autograd import Variable
 from torch.nn import functional as F
 
 def loss_function(recon_x, x, mu, logvar) -> Variable:

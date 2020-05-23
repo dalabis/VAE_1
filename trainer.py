@@ -1,4 +1,4 @@
-from loss import loss_function
+from VAE_1.loss import loss_function
 
 def train(epoch):
     # toggle model to train mode
@@ -7,7 +7,7 @@ def train(epoch):
     # in the case of MNIST, len(train_loader.dataset) is 60000
     # each 'data' is of BATCH_SIZE samples and has shape [128, 1, 28, 28]
     for batch_idx, (data, _) in enumerate(train_loader):
-        data = Variable()data
+        data = Variable(data)
         if CUDA:
             data = data.cuda()
         optimizer.zero_grad()
@@ -27,8 +27,8 @@ def train(epoch):
                 loss.data[0] / len(data)))
             
     print('====> Epoch: {} Average loss: {:.4f}'.format(
-        epoch, train_loss / len(train_loader.dataset
-                                
+        epoch, train_loss / len(train_loader.dataset)))
+
 def test(epoch):
     # toggle model to test / inference mode
     model.eval()
