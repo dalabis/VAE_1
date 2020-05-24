@@ -2,9 +2,9 @@ import torch
 from torch.autograd import Variable
 from torch.nn import functional as F
 
-def loss_function(recon_x, x, mu, logvar) -> Variable:
+def loss_function(recon_x, x, mu, logvar, BATCH_SIZE) -> Variable:
     # how well do input x and output recon_x agree?
-    BCE = F.binary_cross_entropy(recon_x, x.viev(-1, 784))
+    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784))
     
     # KLD is Kullback-Leibler divergance -- how musch does learned distribution deviate from another, in this specific case the learned distribution from the unit Gaussian
     

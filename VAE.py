@@ -67,7 +67,7 @@ class VAE(nn.Module):
             std = logvar.mul(0.5).exp_()  # type: Variable
             # - std.data is the [128, ZDIMS] tensor that is wrapped by std
             # - so eps is [128, ZDIMS] with all elements drawn from a mean 0 and stddev 1 normal disribution that is 128 samples of random ZDIMS-float vectors
-            eps = Variable(std.data.new(std.size().normal_()))
+            eps = Variable(std.data.new(std.size()).normal_())
             # - sample from a normal distribution with standart deviation = std and mean = mu by multiplying mean 0 stddev 1 sample with desired std and mu
             # - so we have 128 sets (the batch) of random ZDIMS-float vectors sampled from normal disribution with learned std and mu for the current input
             return eps.mul(std).add_(mu)
@@ -80,6 +80,6 @@ class VAE(nn.Module):
         return self.sigmoid(self.fc4(h3))
     
     def forward(self, x: Variable) -> (Variable, Variable, Variable):
-        mu, logvar = self.encode(x.viev(-1, 784))
+        mu, logvar = self.encode(x.view(-1, 784))
         z = self.reparameterize(mu, logvar)
         return self.decode(z), mu, logvar

@@ -13,7 +13,7 @@ def train(epoch):
         optimizer.zero_grad()
         
         # push whole batch of data through VAE.forvard() to get recon_loss
-        recon_batc, mu, logvar = moder(data)
+        recon_batc, mu, logvar = model(data)
         # calculate scalar loss
         loss = loss_function(recon_batch, data, mu, logvar)
         # calculate the gradient of the loss w.r.t. the graph leaves
