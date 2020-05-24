@@ -9,7 +9,7 @@ class Flatten(nn.Module):
         return input.view(inputs.size(0), -1)
     
     
-class UnFlutten(nn.Module):
+class UnFlatten(nn.Module):
     def forward(self, inputs, size=28):
         return inputs.view(inputs.size(0), size, 1, 1)
     
@@ -45,19 +45,23 @@ class VAE(nn.Module):
             nn.Sigmoid(),
         )
     
-    def reparameterize(self, mu: Variable, logvar: Variable) -> Variable:
-        if self.training:
-            std = logvar.mul(0.5).exp_()  # type: Variable
-            eps = Variable(std.data.new(std.size()).normal_())
-            return eps.mul(std).add_(mu)
-        else:
-            return mu
-        
-    def decode(self, z: Variable) -> Variable:
-        h3 = self.relu(self.fc3(z))
-        return self.sigmoid(self.fc4(h3))
+    def reparameterize(self, mu, logvar):
+        std = logvar.mul(0.5).exp_()
+        # return torch.normal(mu, std)
+        esp = torch.randn(*mu.size())
+        z = mu + std * esp
+        return z
     
-    def forward(self, x: Variable) -> (Variable, Variable, Variable):
-        mu, logvar = self.encode(x.view(-1, 784))
+    def bottleneck(self, h):
+        mu, logvar = self.fc1(h), self.fc2(h)
         z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
+        return z, mu, logvar
+        
+    def representation(self, x):
+        return self.bottleneck(self.encoder(x))[0]
+
+    def forward(self, x):
+        h = self.encoder(x)
+        z, mu, logvar = self.bottleneck(h)
+        z = self.fc3(z)
+        return self.decoder(z), mu, logvar
