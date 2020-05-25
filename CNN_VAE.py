@@ -6,27 +6,25 @@ from torch.autograd import Variable
 
 class Flatten(nn.Module):
     def forward(self, inputs):
-        return input.view(inputs.size(0), -1)
+        return inputs.view(inputs.size(0), -1)
     
     
 class UnFlatten(nn.Module):
-    def forward(self, inputs, size=28):
-        return inputs.view(inputs.size(0), size, 1, 1)
+    def forward(self, inputs):
+        return inputs.view(inputs.size(0), 14, 14, 32)
     
     
 class VAE(nn.Module):
-    def __init__(self, image_channels=1, h_dim=28, z_dim=2):
+    def __init__(self, image_channels=1, h_dim=128, z_dim=2):
         super(VAE, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(image_channels, 4, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Conv2d(4, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, stride=1),
-            nn.ReLU(),
-            Flatten()
+            nn.Conv2d(image_channels, 32, kernel_size=3, stride=1, padding=2)
+	    nn.ReLU(),
+	    nn.Conv2d(image_channels, 32, kernel_size=3, stride=1, padding=2)
+	    nn.ReLU(),
+	    nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(0.25),
+	    Flatten()
         )
         
         self.fc1 = nn.Linear(h_dim, z_dim)
@@ -34,15 +32,15 @@ class VAE(nn.Module):
         self.fc3 = nn.Linear(z_dim, h_dim)
         
         self.decoder = nn.Sequential(
+	    nn.Linear(h_dim, 14 * 14 * 32)
+	    nn.ReLU(),
             UnFlatten(),
-            nn.ConvTranspose2d(h_dim, 16, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(16, 8, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(8, 4, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(4, image_channels, kernel_size=3, stride=1),
-            nn.Sigmoid(),
+	    nn.Dropout(0.25),
+	    nn.ConvTranspose2d(32, 32, kernel_size=2, stride=2)
+ 	    nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=2)
+	    nn.ReLU(),
+	    nn.Conv2d(32, image_channels, kernel_size=3, stride=1, padding=2)
+	    nn.Sigmoid()
         )
     
     def reparameterize(self, mu, logvar):
